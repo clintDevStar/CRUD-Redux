@@ -1,4 +1,4 @@
-export default function games(state = [], action){
+export default function games(state = [], action = {}){
     switch(action.type){
        default:
            return state
