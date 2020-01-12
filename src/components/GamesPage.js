@@ -2,33 +2,53 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
 
-import  fetchGames  from "../actions/games";
-import GamesList from "./GamesList";
+import fetchGames from "../middleware/gameMiddleware";
+import { getGames, getGamesPending, getGamesError } from "../reducers/games";
 
+import GamesList from "./GamesList";
+import { bindActionCreators } from "redux";
 
 class GamesPage extends Component {
-  componentDidMount() {
-    this.props.fetchGames();
+  constructor(props) {
+    super(props);
+
+    this.shouldComponentRender = this.shouldComponentRender.bind(this);
   }
+
+  componentWillMount() {
+    const { fetchGames } = this.props;
+    fetchGames();
+  }
+
+  shouldComponentRender() {
+    const { pending } = this.props;
+    if (this.pending === false) return false;
+    return true;
+  }
+
   render() {
     return (
       <div>
         <h1>Games List</h1>
-        <GamesList games={this.props.games} />
+        {error && <span>{error}</span>}
+        <GamesList games={games} />
       </div>
     );
   }
 }
 
-GamesPage.propTypes = {
-  games: PropTypes.array.isRequired,
-  fecthGames: PropTypes.func.isRequired
-};
+const mapStateToProps = state => ({
+  error: getGamesError(state),
+  games: getGames(state),
+  pending: getGamesPending(state)
+});
 
-const mapStateToProps = state => {
-  return {
-    games: state.games
-  };
-};
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(
+    {
+      fetchGames
+    },
+    dispatch
+  );
 
-export default connect(mapStateToProps, { fetchGames })(GamesPage);
+export default connect(mapStateToProps, mapDispatchToProps)(GamesPage);
